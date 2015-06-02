@@ -1,0 +1,19 @@
+.vcenter td{
+    vertical-align: middle!important;
+}
+
+.table-min-height{
+    min-height: 295px;
+}
+
+.no-margin{
+  margin: 0;
+}
+
+.no-padding{
+  padding: 0!important;
+}
+
+.no-padding tr:first-child td{
+  border: 0;
+}
