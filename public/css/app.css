@@ -1,9 +1,5 @@
 .vcenter td{
-    vertical-align: middle!important;
-}
-
-.table-min-height{
-    min-height: 295px;
+  vertical-align: middle!important;
 }
 
 .no-margin{
@@ -16,4 +12,55 @@
 
 .no-padding tr:first-child td{
   border: 0;
+}
+
+.console{
+  padding: 15px;
+  color: #FFFFFF;
+  font-weight: 800;
+  background-color: #222222;
+  border-radius: 5px;
+  min-height: 255px;
+}
+
+
+/*laranja: #FF7C23*/
+/*verde: #3AD42A*/
+/*amarelo: #FEFFA9*/
+/*roxo: #9965CC*/
+/*cinza: #8B8682*/
+/*azul: #1C98FF*/
+/*vermelho: #F8091E*/
+
+.log-block-name{
+  color: #FEFFA9; /*amarelo*/
+}
+
+.log-group{
+  color: #9965CC; /*roxo*/
+}
+
+.log-group-line{
+  color: #FF7C23; /*laranja*/
+}
+
+.log-overwrite{
+  color: #FF7A85; /*vermelho*/
+}
+
+.log-overwritten .log-action, .log-allocated .log-action{
+  color: #3AD42A; /*verde*/
+}
+
+.log-exist .log-action{
+  color: #8B8682; /*cinza*/
+}
+
+.log-action{
+  padding: 0 4px;
+}
+
+
+.log-exist .log-action{
+  padding: 0 2px 0 4px;
 }

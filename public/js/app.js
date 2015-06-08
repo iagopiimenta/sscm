@@ -2,19 +2,25 @@
   'use strict';
 
   angular.element(document).ready(function() {
-    $('body').show();
+    document.getElementsByTagName('body')[0].style.display = "block";
   });
 
-  angular.module('app', [])
-  .controller('MemoryController', function($scope, $timeout) {
+
+  angular.module('app', []);
+
+  angular.module('app').factory('Logger', function(){
+    return {};
+  });
+  angular.module('app').controller('MemoryController', function($scope, $timeout, Logger) {
     var vm = this;
     var MAIN_MEMORY_SIZE = 0;
     var MEMORY_GROUPS_SIZE = 0;
     var MEMORY_CACHE_LINE_SIZE = 1;
-    // vm.blocksActive = [];
     vm.blocksArray = [];
     vm.linesArray = [];
     vm.lines = [];
+
+    vm.logs = [];
 
     vm.lines = [];
     vm.groupLines = 0;
@@ -74,6 +80,9 @@
       for (var i = start; i < end; i++) {
         if(vm.lines[i]){
           if(vm.lines[i].block == block){
+            // vm.log.add(block, i, vm.lines[i].block); // ja existe
+            console.log('O Bloco '+block+' já existe na MC '+lineGroup+' / '+ (i - start) + ' - linha: ' + i);
+            vm.logs.push({block: block, group: lineGroup, groupLine: (i - start), line: i, type: 'exist'});
             return vm.lines[i].used_at = performance.now(); // encontrou uma linha com o bloco que está procurando
           }else if(least_recently_used_at > vm.lines[i].used_at){
             least_recently_used_at = vm.lines[i].used_at;
@@ -97,9 +106,19 @@
       // vm.blocks[vm.cursor.block] = true;
       // $timeout
 
+
       if(vm.cursor.notUsed > -1){
+        vm.groupLines.length
+        var cj = vm.cursor.notUsed / vm.numberLinesEachGroup.length;
+        var linha = vm.cursor.notUsed % vm.numberLinesEachGroup.length;
+        console.log('O bloco '+vm.cursor.block+' foi copiado para o C'+Math.floor(cj)+' linha '+linha);
+        vm.logs.push({block: vm.cursor.block, group: Math.floor(cj), groupLine: linha, line: vm.cursor.notUsed, type: 'allocated'});
         vm.lines[vm.cursor.notUsed] = {used_at: performance.now(), block: vm.cursor.block};
       }else{
+        var cj = vm.cursor.least_recently_used_index / vm.numberLinesEachGroup.length;
+        var linha = vm.cursor.least_recently_used_index % vm.numberLinesEachGroup.length;
+        console.log('bloco '+vm.cursor.block+' movido da MP para a MC na linha '+Math.floor(cj)+'/'+linha+', substituindo o bloco '+vm.lines[vm.cursor.least_recently_used_index].block);
+        vm.logs.push({block: vm.cursor.block, group: Math.floor(cj), groupLine: linha, line: vm.cursor.least_recently_used_index, type: 'overwritten', oldBlock: vm.lines[vm.cursor.least_recently_used_index].block});
         vm.lines[vm.cursor.least_recently_used_index] = {used_at: performance.now(), block: vm.cursor.block};
       }
     };

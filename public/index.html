@@ -26,8 +26,51 @@
     </nav>
     <div class="container" ng-controller="MemoryController as vm">
       <div class="row">
+        <div class="col-md-6">
+          <div class="col-md-6 form-group">
+            <label for="mainMemorySize">Tam. da MP(bytes):</label>
+            <input autofocus class="form-control main-memory-size" ng-model="vm.mainMemorySize" id="mainMemorySize" min="0" type="number">
+          </div>
+          <div class="col-md-6 form-group">
+            <label for="mainMemoryBlockSize">Tam. do Bloco(bytes):</label>
+            <input class="form-control main-memory-block-size" ng-model="vm.mainMemoryBlockSize"id="mainMemoryBlockSize" min="0" type="number">
+          </div>
+          <div class="col-md-6 form-group">
+            <label for="memoryCacheNumberLines">Qtde de linhas da MC:</label>
+            <input class="form-control memory-cache-number-lines" ng-model="vm.memoryCacheNumberLines"id="memoryCacheNumberLines" min="0" type="number">
+          </div>
+          <div class="col-md-6 form-group">
+            <label for="memoryCacheN">N:</label>
+            <input class="form-control memory-cache-n" ng-model="vm.memoryCacheN"id="memoryCacheN" min="0" type="number">
+          </div>
+          <div class="col-md-12 form-group">
+            <label for="numbersInput">Sequencia de acesso aos blocos da MP(separados por espaço):</label>
+            <input class="form-control numbers-in" ng-model="vm.numbersInput"id="numbersInput" type="text">
+          </div>
+          <div class="col-md-12 form-group">
+            <button class="btn btn-primary" ng-click="vm.moveBlocks()" type="submit">Executar sequência</button>
+          </div>
+        </div>
+        <div class="col-md-6 console">
+          <p ng-hide="vm.logs.length > 0">Os logs dos acessos à MP e MC serão mostrados aqui.</p>
+          <div ng-repeat="log in vm.logs" ng-show="vm.logs.length > 0">
+            <div class="logs" ng-switch on="log.type">
+              <div class="log-exist" ng-switch-when="exist">
+                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">já existe</span> na MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span></span>
+              </div>
+              <div class="log-overwritten" ng-switch-when="overwritten">
+                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">copiado</span> para a MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span> <span class="log-overwrite">substituindo</span> o <span class="log-block-name">bloco</span> {{log.oldBlock}}</span>
+              </div>
+              <div class="log-allocated" ng-switch-default>
+                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">copiado</span> para a MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
         <div class="col-md-3">
-          <table class="table table-striped table-min-height table-bordered text-center vcenter">
+          <table class="table table-striped table-bordered text-center vcenter">
             <thead>
               <tr>
                 <th colspan="2" class="text-center">MP</th>
@@ -43,24 +86,29 @@
             </tbody>
           </table>
         </div>
-        <div class="col-md-3 col-md-offset-3">
+        <div class="col-md-3">
           <table class="table table-striped table-bordered text-center vcenter">
             <thead>
               <tr>
-                <th colspan="2" class="text-center">MC</th>
+                <th colspan="3" class="text-center">MC</th>
+              </tr>
+              <tr>
+                <th class="text-center">Conj.</th>
+                <th class="text-center">Linha</th>
+                <th class="text-center">Bloco</th>
               </tr>
             </thead>
             <tbody>
               <tr ng-repeat="lineGroup in vm.groupLines track by $index">
                 <td class="col-md-3">C{{$index}}</td>
-                <td class="no-padding">
+                <td colspan="2" class="no-padding">
                   <table class="table table-striped text-center vcenter no-margin">
                     <tbody>
                       <tr ng-repeat="line in vm.numberLinesEachGroup track by $index">
-                        <td ng-class="vm.lineClass($parent.$index, $index)">Linha {{$index}}</td>
-                        <td  ng-class="vm.lineClass($parent.$index, $index)">
+                        <td class="col-md-6" ng-class="vm.lineClass($parent.$index, $index)">L{{$index}}</td>
+                        <td class="col-md-6" ng-class="vm.lineClass($parent.$index, $index)">
                           <span ng-hide="vm.canShowLineBlock($parent.$index, $index)">
-                            -
+                            Nenhum
                           </span>
                           <span ng-show="vm.canShowLineBlock($parent.$index, $index)">
                             Bloco {{vm.currentLine($parent.$index, $index).block}}
@@ -72,39 +120,10 @@
                 </td>
               </tr>
               <tr ng-show="vm.isEmptyMemoryCache()">
-                <td>Vazia</td>
+                <td colspan="3">Vazia</td>
               </tr>
             </tbody>
           </table>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-3 form-group">
-          <label for="mainMemorySize">Tam. da MP(bytes):</label>
-          <input class="form-control main-memory-size" ng-model="vm.mainMemorySize" id="mainMemorySize" min="0" type="number">
-        </div>
-        <div class="col-md-3 form-group">
-          <label for="mainMemoryBlockSize">Tam. do Bloco(bytes):</label>
-          <input class="form-control main-memory-block-size" ng-model="vm.mainMemoryBlockSize"id="mainMemoryBlockSize" min="0" type="number">
-        </div>
-        <div class="col-md-3 form-group">
-          <label for="memoryCacheNumberLines">Qtde de linhas da MC:</label>
-          <input class="form-control memory-cache-number-lines" ng-model="vm.memoryCacheNumberLines"id="memoryCacheNumberLines" min="0" type="number">
-        </div>
-        <div class="col-md-3 form-group">
-          <label for="memoryCacheN">N:</label>
-          <input class="form-control memory-cache-n" ng-model="vm.memoryCacheN"id="memoryCacheN" min="0" type="number">
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-3 form-group">
-          <label for="numbersInput">Sequencia de números de blocos(separados por espaço):</label>
-          <input class="form-control numbers-in" ng-model="vm.numbersInput"id="numbersInput" type="text">
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-md-3 form-group">
-          <button class="btn btn-default" ng-click="vm.moveBlocks()" type="submit">Próximo</button>
         </div>
       </div>
     </div>
