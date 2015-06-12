@@ -17,51 +17,81 @@
         <p class="navbar-text navbar-right">Iago</p>
       </div>
     </nav>
-    <div class="container" ng-controller="MemoryController as vm">
+    <div class="container" ng-controller="MemoryController">
       <div class="row">
         <div class="col-md-6">
-          <div class="col-md-6 form-group">
-            <label for="mainMemorySize">Tam. da MP(bytes):</label>
-            <input autofocus class="form-control main-memory-size" ng-model="vm.mainMemorySize" id="mainMemorySize" min="0" type="number">
-          </div>
-          <div class="col-md-6 form-group">
-            <label for="mainMemoryBlockSize">Tam. do Bloco(bytes):</label>
-            <input class="form-control main-memory-block-size" ng-model="vm.mainMemoryBlockSize"id="mainMemoryBlockSize" min="0" type="number">
-          </div>
-          <div class="col-md-6 form-group">
-            <label for="memoryCacheNumberLines">Qtde de linhas da MC:</label>
-            <input class="form-control memory-cache-number-lines" ng-model="vm.memoryCacheNumberLines"id="memoryCacheNumberLines" min="0" type="number">
-          </div>
-          <div class="col-md-6 form-group">
-            <label for="memoryCacheN">N:</label>
-            <input class="form-control memory-cache-n" ng-model="vm.memoryCacheN"id="memoryCacheN" min="0" type="number">
-          </div>
-          <div class="col-md-12 form-group">
-            <label for="numbersInput">Sequencia de acesso aos blocos da MP(separados por espaço):</label>
-            <input class="form-control numbers-in" ng-model="vm.numbersInput"id="numbersInput" type="text">
-          </div>
-          <div class="col-md-12 form-group">
-            <button class="btn btn-primary" ng-click="vm.moveBlocks()" type="submit">Executar sequência</button>
-          </div>
-        </div>
-        <div class="col-md-6 console">
-          <p ng-hide="vm.logs.length > 0">Os logs dos acessos à MP e MC serão mostrados aqui.</p>
-          <div ng-repeat="log in vm.logs" ng-show="vm.logs.length > 0">
-            <div class="logs" ng-switch on="log.type">
-              <div class="log-exist" ng-switch-when="exist">
-                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">já existe</span> na MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span></span>
+          <form name="setupForm"><!-- http://www.ng-newsletter.com/posts/validations.html -->
+            <div class="row">
+              <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('mainMemorySize')">
+                <label class="control-label" for="mainMemorySize">*Tam. da MP(bytes):</label>
+                <input autofocus class="form-control" name="mainMemorySize" ng-model="setup.mainMemorySize" min="1" type="number" required>
+                <div ng-messages="setupForm.mainMemorySize.$error" ng-if="dirtyAndInvalidClass('mainMemorySize')">
+                  <div ng-messages-include="error-messages"></div>
+                </div>
               </div>
-              <div class="log-overwritten" ng-switch-when="overwritten">
-                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">copiado</span> para a MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span> <span class="log-overwrite">substituindo</span> o <span class="log-block-name">bloco</span> {{log.oldBlock}}</span>
-              </div>
-              <div class="log-allocated" ng-switch-default>
-                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">copiado</span> para a MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span></span>
+              <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('mainMemoryBlockSize')">
+                <label class="control-label" for="mainMemoryBlockSize">Tam. do Bloco(bytes):</label>
+                <input class="form-control" name="mainMemoryBlockSize" ng-model="setup.mainMemoryBlockSize" min="1" type="number" required>
+                <div ng-messages="setupForm.mainMemoryBlockSize.$error" ng-if="dirtyAndInvalidClass('mainMemoryBlockSize')">
+                  <div ng-messages-include="error-messages"></div>
+                </div>
               </div>
             </div>
-          </div>
+            <div class="row">
+              <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('memoryCacheNumberLines')">
+                <label for="memoryCacheNumberLines">Qtde de linhas da MC:</label>
+                <input class="form-control" name="memoryCacheNumberLines" ng-model="setup.memoryCacheNumberLines" min="0" type="number" required>
+                <div ng-messages="setupForm.memoryCacheNumberLines.$error" ng-if="dirtyAndInvalidClass('memoryCacheNumberLines')">
+                  <div ng-messages-include="error-messages"></div>
+                </div>
+              </div>
+              <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('memoryCacheN')">
+                <label for="memoryCacheN">N:</label>
+                <input class="form-control" name="memoryCacheN" ng-model="setup.memoryCacheN" min="0" type="number" required>
+                <div ng-messages="setupForm.memoryCacheN.$error" ng-if="dirtyAndInvalidClass('memoryCacheN')">
+                  <div ng-messages-include="error-messages"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 form-group" ng-class="dirtyAndInvalidClass('sequenceBlocks')">
+                <label for="numbersInput">Sequencia de acesso aos blocos da MP(separados por espaço):</label>
+                <input class="form-control" name="sequenceBlocks" ng-model="setup.sequenceBlocks" type="text" ng-pattern="/^\d+( \d+)*$/" required>
+                <div ng-messages="setupForm.sequenceBlocks.$error" ng-if="dirtyAndInvalidClass('sequenceBlocks')">
+                  <div ng-messages-include="error-messages"></div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div ng-init="setup.runOnceAllBlocks=true" class="col-md-12 form-group">
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="runOnceAllBlocks" ng-model="setup.runOnceAllBlocks" ng-value="true">
+                    Executar blocos sequencialmente
+                  </label>
+                </div>
+                <div class="radio">
+                  <label>
+                    <input type="radio" name="runOnceAllBlocks" ng-model="setup.runOnceAllBlocks" ng-value="false">
+                    Executar blocos passo a passo
+                  </label>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12 form-group">
+                <button ng-show="setup.runOnceAllBlocks" ng-disabled="setupForm.$invalid" class="btn btn-primary" ng-click="runSequence(setup)" type="submit">Executar</button>
+                <button ng-hide="setup.runOnceAllBlocks" ng-disabled="setupForm.$invalid || !finishJob" class="btn btn-primary" ng-click="runSequence(setup)" type="submit">Próximo</button>
+              </div>
+              <div class="col-md-12 form-group">
+                <button ng-disabled="setupForm.$invalid || !finishJob" class="btn btn-danger" ng-click="restart(setup)" type="submit">Reiniciar</button>
+              </div>
+            </div>
+          </form>
         </div>
       </div>
       <div class="row">
+        <hr>
         <div class="col-md-3">
           <table class="table table-striped table-bordered text-center vcenter">
             <thead>
@@ -70,10 +100,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="block in vm.blocks track by $index">
-                <td ng-class="vm.blockClass($index)">Bloco {{$index}}</td>
+              <tr ng-repeat="block in blocks track by $index">
+                <td animate-on-change="blocks[$index]">Bloco {{$index}}</td>
               </tr>
-              <tr ng-show="vm.isEmptyMainMemory()">
+              <tr ng-show="isEmptyMainMemory()">
                 <td>Vazia</td>
               </tr>
             </tbody>
@@ -92,19 +122,19 @@
               </tr>
             </thead>
             <tbody>
-              <tr ng-repeat="lineGroup in vm.groupLines track by $index">
+              <tr ng-repeat="lineGroup in groupLines track by $index">
                 <td class="col-md-3">C{{$index}}</td>
                 <td colspan="2" class="no-padding">
                   <table class="table table-striped text-center vcenter no-margin">
                     <tbody>
-                      <tr ng-repeat="line in vm.numberLinesEachGroup track by $index">
-                        <td class="col-md-6" ng-class="vm.lineClass($parent.$index, $index)">L{{$index}}</td>
-                        <td class="col-md-6" ng-class="vm.lineClass($parent.$index, $index)">
-                          <span ng-hide="vm.canShowLineBlock($parent.$index, $index)">
+                      <tr ng-repeat="line in numberLinesEachGroup track by $index">
+                        <td class="col-md-6" animate-on-change="lineByGroupAndLineGroupNumber($parent.$index, $index)" ngg-class="vm.lineClass($parent.$index, $index)">L{{$index}}</td>
+                        <td class="col-md-6" animate-on-change="lineByGroupAndLineGroupNumber($parent.$index, $index)" ngg-class="vm.lineClass($parent.$index, $index)">
+                          <span ng-hide="canShowLineBlock($parent.$index, $index)">
                             Nenhum
                           </span>
-                          <span ng-show="vm.canShowLineBlock($parent.$index, $index)">
-                            Bloco {{vm.currentLine($parent.$index, $index).block}}
+                          <span ng-show="canShowLineBlock($parent.$index, $index)">
+                            Bloco {{currentLine($parent.$index, $index).block}}
                           </span>
                         </td>
                       </tr>
@@ -112,17 +142,40 @@
                   </table>
                 </td>
               </tr>
-              <tr ng-show="vm.isEmptyMemoryCache()">
+              <tr ng-show="isEmptyMemoryCache()">
                 <td colspan="3">Vazia</td>
               </tr>
             </tbody>
           </table>
         </div>
+        <div class="col-md-6 console">
+          <p ng-hide="logs.length > 0">Os logs dos acessos à MP e MC serão mostrados aqui.</p>
+          <div ng-repeat="log in logs" ng-show="logs.length > 0">
+            <div class="logs" ng-switch on="log.type">
+              <div class="log-exist" ng-switch-when="exist">
+                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">já existe</span> na MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span></span>
+              </div>
+              <div class="log-overwritten" ng-switch-when="overwritten">
+                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">copiado</span> para a MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span> <span class="log-overwrite">substituindo</span> o <span class="log-block-name">bloco</span> {{log.oldBlock}}</span>
+              </div>
+              <div class="log-allocated" ng-switch-default>
+                <span><span class="log-block-name">Bloco</span> {{log.block}} <span class="log-action">copiado</span> para a MC no conj. <span class="log-group">{{log.group}}</span> linha <span class="log-group-line">{{log.groupLine}}</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
+    <script type="text/ng-template" id="error-messages">
+      <small ng-message="required" class="help-block">Este campo é obrigatório</small>
+      <small ng-message="number" class="help-block">Digite apenas números</small>
+      <small ng-message="min" class="help-block">Valor muito baixo</small>
+      <small ng-message="pattern" class="help-block">Sequência inválida</small>
+    </script>
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/angular-messages/angular-messages.js"></script>
     <script src="js/app.js"></script>
   </body>
 </html>

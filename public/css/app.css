@@ -68,3 +68,54 @@ body{
 .log-exist .log-action{
   padding: 0 2px 0 4px;
 }
+
+
+.info {
+    -webkit-transition: 0.5s linear all;
+    transition: 0.5s linear all;
+    background-color: none;
+}
+
+/*
+.info{
+
+  -moz-animation: info 1s ease-out;
+  -moz-animation-iteration-count: 1;
+
+  -webkit-animation: info 1s ease-out;
+  -webkit-animation-iteration-count: 1;
+
+  -ms-animation: info 1s ease-out;
+  -ms-animation-iteration-count: 1;
+
+}
+
+@-webkit-keyframes info {
+    0% { background-color:none;}
+    50% { background-color:#fbf8b2;}        
+    100% {background-color:none;}
+}
+
+@-moz-keyframes info {
+    0% { background-color:none;}
+    50% { background-color:#fbf8b2;}        
+    100% {background-color:none;}
+}
+
+@-ms-keyframes info {
+    0% { background-color:none;}
+    50% { background-color:#fbf8b2;}        
+    100% {background-color:none;}
+}*/
+
+
+[animate-on-change] {
+  transition: all 1s;
+  -webkit-transition: all 1s;
+}
+[animate-on-change].changed {
+    background-color: red!important;
+    color: white;
+    transition: none;
+    -webkit-transition: none;
+}

@@ -4,170 +4,189 @@
   angular.element(document).ready(function() {
     document.getElementsByTagName('body')[0].style.display = "block";
   });
+  angular.module('app', ['ngMessages']);
 
-
-  angular.module('app', []);
+  angular.module('app').directive('animateOnChange', ['$animate', '$timeout', function($animate, $timeout) {
+    return function(scope, elem, attr) { // http://plnkr.co/edit/cWciPY4zJ8lSr31CECMS?p=preview
+      scope.$watchCollection(attr.animateOnChange, function(newValues, oldValues) {
+        if(!newValues){
+          return;
+        }
+        $animate.addClass(elem, 'changed').then(function() {
+          $animate.addClass(elem, 'info');
+          $timeout(function(){
+            $animate.removeClass(elem, 'changed');
+          }, 0);
+        });
+      });
+    };
+  }]);
 
   angular.module('app').factory('Logger', function(){
     return {};
   });
   angular.module('app').controller('MemoryController', function($scope, $timeout, Logger) {
-    var vm = this;
-    var MAIN_MEMORY_SIZE = 0;
-    var MEMORY_GROUPS_SIZE = 0;
-    var MEMORY_CACHE_LINE_SIZE = 1;
-    vm.blocksArray = [];
-    vm.linesArray = [];
-    vm.lines = [];
+    // $scope.cursor = {};
+    $scope.finishJob = true;
+    $scope.logs = [];
+    $scope.running = false;
+    $scope.setup = {
+      mainMemorySize: 20,
+      mainMemoryBlockSize: 2,
+      memoryCacheNumberLines: 6,
+      memoryCacheN: 2,
+      sequenceBlocks: '0 1 2 3 4 5 0 6',
+    };
 
-    vm.logs = [];
+    $scope.dirtyAndInvalidClass = function(field){
+      if(($scope.setupForm[field].$dirty || $scope.setupForm[field].$touched) && $scope.setupForm[field].$invalid){
+        return 'has-error';
+      }
+    };
 
-    vm.lines = [];
-    vm.groupLines = 0;
-    $scope.$watchGroup(['vm.memoryCacheNumberLines', 'vm.memoryCacheN'],function(newValues, oldValues){
-      if(newValues[0] > 0 && newValues[1] > 0){
-        vm.lines = new Array(newValues[0]);
-        vm.groupLines = new Array(Math.ceil(newValues[0] / newValues[1]));
-        vm.numberLinesEachGroup = new Array(newValues[1]);
+    $scope.$watchGroup(['setup.memoryCacheNumberLines', 'setup.memoryCacheN'],function(newValues, oldValues){
+      if($scope.setupForm.memoryCacheNumberLines.$valid && $scope.setupForm.memoryCacheN.$valid){
+        $scope.lines = new Array($scope.setup.memoryCacheNumberLines); // linhas da MC
+        $scope.groupLines = new Array(Math.ceil($scope.setup.memoryCacheNumberLines / $scope.setup.memoryCacheN));
+        $scope.numberLinesEachGroup = new Array($scope.setup.memoryCacheN);
       }
     });
 
-    vm.number_of_blocks = 0;
-    vm.blocks = [];
-    $scope.$watchGroup(['vm.mainMemorySize', 'vm.mainMemoryBlockSize'],function(newValues, oldValues){
-      if(newValues[0] > 0 && newValues[1] > 0){
-        var number_of_blocks = Math.ceil(newValues[0] / newValues[1]); // quantidade de blocos
-        vm.blocks = safeNewArray(new Array(number_of_blocks), vm.blocks);
-      }else{
-        vm.blocks = safeNewArray(new Array(MAIN_MEMORY_SIZE), vm.blocks);
+    $scope.$watchGroup(['setup.mainMemorySize', 'setup.mainMemoryBlockSize'],function(newValues, oldValues){
+      if($scope.setupForm.mainMemorySize.$valid && $scope.setupForm.mainMemoryBlockSize.$valid){
+        var number_of_blocks = Math.ceil($scope.setup.mainMemorySize / $scope.setup.mainMemoryBlockSize);
+        if(!$scope.blocks || $scope.blocks.length != number_of_blocks){
+          $scope.blocks = new Array(number_of_blocks);
+        }
       }
     });
 
-    vm.isEmptyMainMemory = function(){
-      return vm.blocks.length == 0;
-    };
-
-    vm.isEmptyMemoryCache = function(){
-      return vm.lines.length == 0;
-    };
-
-    vm.lineClass = function(lineGroup, lineNumber){
-      if(vm.lines[(lineGroup * vm.numberLinesEachGroup.length) + lineNumber]){
-        return "info";
-      }
-    };
-
-    vm.blockClass = function(blockNumber){
-      if(vm.blocks[blockNumber] == true){
-        return "info";
-      }
-    };
-
-    window.teste = vm;
-
-    vm.getBlock = function(block){
-      vm.addToMC(block);
-    };
-
-    vm.addToMC = function(block){
-      var lineGroup = block % vm.groupLines.length;
-      var start = lineGroup * vm.numberLinesEachGroup.length;
-      var end = (lineGroup + 1) * vm.numberLinesEachGroup.length;
-
-      var notUsed = -1;
-      var least_recently_used_at = Number.MAX_VALUE;
-      var least_recently_used_index = -1;
-      for (var i = start; i < end; i++) {
-        if(vm.lines[i]){
-          if(vm.lines[i].block == block){
-            // vm.log.add(block, i, vm.lines[i].block); // ja existe
-            console.log('O Bloco '+block+' já existe na MC '+lineGroup+' / '+ (i - start) + ' - linha: ' + i);
-            vm.logs.push({block: block, group: lineGroup, groupLine: (i - start), line: i, type: 'exist'});
-            return vm.lines[i].used_at = performance.now(); // encontrou uma linha com o bloco que está procurando
-          }else if(least_recently_used_at > vm.lines[i].used_at){
-            least_recently_used_at = vm.lines[i].used_at;
-            least_recently_used_index = i;
-          }
-        }else{
-          notUsed = notUsed > -1 ? notUsed : i; // encontrou uma linha vazia
-        }
-      }
-
-      vm.cursor = {block: block, notUsed: notUsed, least_recently_used_index: least_recently_used_index};
-
-      vm.blocks[block] = true;
-
-      $timeout(vm.addBlock, 1000);
-      // vm.addBlock();
-    };
-
-    vm.addBlock = function(block, notUsed, least_recently_used_index){
-      // $timeout
-      // vm.blocks[vm.cursor.block] = true;
-      // $timeout
-
-
-      if(vm.cursor.notUsed > -1){
-        vm.groupLines.length
-        var cj = vm.cursor.notUsed / vm.numberLinesEachGroup.length;
-        var linha = vm.cursor.notUsed % vm.numberLinesEachGroup.length;
-        console.log('O bloco '+vm.cursor.block+' foi copiado para o C'+Math.floor(cj)+' linha '+linha);
-        vm.logs.push({block: vm.cursor.block, group: Math.floor(cj), groupLine: linha, line: vm.cursor.notUsed, type: 'allocated'});
-        vm.lines[vm.cursor.notUsed] = {used_at: performance.now(), block: vm.cursor.block};
-      }else{
-        var cj = vm.cursor.least_recently_used_index / vm.numberLinesEachGroup.length;
-        var linha = vm.cursor.least_recently_used_index % vm.numberLinesEachGroup.length;
-        console.log('bloco '+vm.cursor.block+' movido da MP para a MC na linha '+Math.floor(cj)+'/'+linha+', substituindo o bloco '+vm.lines[vm.cursor.least_recently_used_index].block);
-        vm.logs.push({block: vm.cursor.block, group: Math.floor(cj), groupLine: linha, line: vm.cursor.least_recently_used_index, type: 'overwritten', oldBlock: vm.lines[vm.cursor.least_recently_used_index].block});
-        vm.lines[vm.cursor.least_recently_used_index] = {used_at: performance.now(), block: vm.cursor.block};
-      }
-    };
-
-    vm.getBlocks = function(blocks){
-      for (var i = 0, len = blocks.length; i < len; i++){
-        if(blocks[i] < vm.blocks.length){
-          vm.getBlock(blocks[i]);
-        }
-      }
-    };
-
-    vm.moveBlocks = function(){
-      var numbers = vm.numbersInput.split(" ");
-      if(vm.numbersInput.match(/[^(\d| )]/g) != null){
-        return;
-      }
-
-      formatInputNumbers(numbers);
-
-      vm.input = numbers;
-      runWorker();
-    };
-
-    vm.currentLine = function(lineGroup, lineNumber){
-      var line = vm.lines[(lineGroup * vm.numberLinesEachGroup.length) + lineNumber];
-      return line ? line : {};
-    };
-
-    vm.canShowLineBlock = function(lineGroup, lineNumber){
-      var line = vm.lines[(lineGroup * vm.numberLinesEachGroup.length) + lineNumber];
+    $scope.canShowLineBlock = function(lineGroup, lineNumber){
+      var line = $scope.lines[(lineGroup * $scope.numberLinesEachGroup.length) + lineNumber];
       return line && typeof line.block != 'undefined';
     };
 
-    function runWorker(){
-      vm.getBlock(vm.input.shift());
-      if(vm.input.length > 0){
-        $timeout(runWorker, 2000);
-      }
-    }
+    $scope.isEmptyMainMemory = function(){
+      return !$scope.blocks || $scope.blocks.length == 0;
+    };
 
-    function formatInputNumbers(numbers){
-      for(var i = 0, len = numbers.length; i < len; i++){
-        numbers[i] = parseInt(numbers[i]);
-      }
-    }
+    $scope.isEmptyMemoryCache = function(){
+      return !$scope.lines || $scope.lines.length == 0;
+    };
 
-    function safeNewArray(newArray, oldArray){
-      return vm.blocksArray.length != newArray.length ? newArray : vm.blocksArray;
-    }
+    $scope.lineByGroupAndLineGroupNumber = function(lineGroup, lineNumber){
+      return $scope.lines[(lineGroup * $scope.numberLinesEachGroup.length) + lineNumber];
+    };
+
+    $scope.currentLine = function(lineGroup, lineNumber){
+      var line = $scope.lines[(lineGroup * $scope.numberLinesEachGroup.length) + lineNumber];
+      return line ? line : {};
+    };
+
+    $scope.runSequence = function(setup){
+      _configure();
+
+      if(setup.runOnceAllBlocks){
+        _runWorkerOnce();
+      }else{
+        _runWorkerStepByStep();
+      }
+    };
+
+    var _configure = function(){
+      if(!$scope.configured){
+        $scope.sequence = $scope.formatSequence();
+        $scope.configured = true;
+      }
+    };
+
+    var unconfigure = function(){
+      $scope.sequence = [];
+      $scope.configured = false;
+    };
+
+    $scope.formatSequence = function(){
+      var sequence = $scope.setup.sequenceBlocks.split(" ");
+      if($scope.setup.sequenceBlocks.match(/[^(\d| )]/g) != null){
+        return;
+      }
+
+      return _formatInputSequence(sequence);
+    };
+
+    var _formatInputSequence = function(sequence){
+      for(var i = 0, len = sequence.length; i < len; i++){
+        sequence[i] = parseInt(sequence[i]);
+      }
+
+      return sequence;
+    };
+
+    var _runWorkerOnce = function(){
+      if($scope.finishJob){
+        $scope.getFromMC($scope.sequence.shift());
+      }
+      if($scope.sequence.length > 0){
+        $timeout(_runWorkerOnce, 200);
+      }
+    };
+
+    var _runWorkerStepByStep = function(){
+      if($scope.finishJob){
+        $scope.getFromMC($scope.sequence.shift());
+      }
+    };
+
+    $scope.getFromMC = function(blockNumber){
+      $scope.finishJob = false;
+      var toLineGroup = blockNumber % $scope.groupLines.length;
+      var startPoint = toLineGroup * $scope.numberLinesEachGroup.length;
+      var endPoint = (toLineGroup + 1) * $scope.numberLinesEachGroup.length;
+
+      var notUsedIndex = -1;
+      var leastRecentlyUsedAt = Number.MAX_VALUE;
+      var leastRecentlyUsedIndex = -1;
+
+      for (var i = startPoint; i < endPoint; i++) {
+        if($scope.lines[i]){
+          if($scope.lines[i].block == blockNumber){
+            // vm.logs.push({block: block, group: toLineGroup, groupLine: (i - startPoint), line: i, type: 'exist'});
+            _jobFinish(1000);
+            return $scope.lines[i].usedAt = performance.now(); // encontrou uma linha com o bloco que está procurando
+          }else if(leastRecentlyUsedAt > $scope.lines[i].usedAt){
+            leastRecentlyUsedAt = $scope.lines[i].usedAt;
+            leastRecentlyUsedIndex = i;
+          }
+        }else{ // encontrou uma linha vazia
+          notUsedIndex = notUsedIndex > -1 ? notUsedIndex : i;
+        }
+      }
+
+      $scope.cursor = {blockNumber: blockNumber, notUsedIndex: notUsedIndex, leastRecentlyUsedIndex: leastRecentlyUsedIndex};
+
+      $scope.blocks[blockNumber] = {usedAt: performance.now()};
+
+      $timeout($scope.addBlockToMC, 1000);
+    };
+
+    $scope.addBlockToMC = function(){
+      if($scope.cursor.notUsedIndex > -1){
+        var toLineGroup = $scope.cursor.notUsedIndex / $scope.numberLinesEachGroup.length; // conj destino
+        var groupLine = $scope.cursor.notUsedIndex % $scope.numberLinesEachGroup.length;
+        $scope.logs.push({block: $scope.cursor.blockNumber, group: Math.floor(toLineGroup), groupLine: groupLine, line: $scope.cursor.notUsedIndex, type: 'allocated'});
+        $scope.lines[$scope.cursor.notUsedIndex] = {usedAt: performance.now(), block: $scope.cursor.blockNumber};
+      }else{
+        var toLineGroup = $scope.cursor.leastRecentlyUsedIndex / $scope.numberLinesEachGroup.length;
+        var groupLine = $scope.cursor.leastRecentlyUsedIndex % $scope.numberLinesEachGroup.length;
+        $scope.logs.push({block: $scope.cursor.blockNumber, group: Math.floor(toLineGroup), groupLine: groupLine, line: $scope.cursor.leastRecentlyUsedIndex, type: 'overwritten', oldBlock: $scope.lines[$scope.cursor.leastRecentlyUsedIndex].block});
+        $scope.lines[$scope.cursor.leastRecentlyUsedIndex] = {usedAt: performance.now(), block: $scope.cursor.blockNumber};
+      }
+
+      _jobFinish(1000);
+    };
+
+    var _jobFinish = function(time){
+      $timeout(function(){$scope.finishJob = true;}, time);
+    };
   });
 })();
