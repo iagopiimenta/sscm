@@ -10,8 +10,12 @@
     return function(scope, elem, attr) { // http://plnkr.co/edit/cWciPY4zJ8lSr31CECMS?p=preview
       scope.$watchCollection(attr.animateOnChange, function(newValues, oldValues) {
         if(!newValues){
+          $animate.removeClass(elem, 'info');
           return;
+        }else{
+          $animate.addClass(elem, 'info');
         }
+
         $animate.addClass(elem, 'changed').then(function() {
           $animate.addClass(elem, 'info');
           $timeout(function(){
@@ -22,18 +26,14 @@
     };
   }]);
 
-  angular.module('app').factory('Logger', function(){
-    return {};
-  });
-  angular.module('app').controller('MemoryController', function($scope, $timeout, Logger) {
+  angular.module('app').controller('MemoryController', ['$scope', '$timeout', function($scope, $timeout) {
     // $scope.cursor = {};
     $scope.finishJob = true;
     $scope.logs = [];
-    $scope.running = false;
     $scope.setup = {
-      mainMemorySize: 20,
+      mainMemorySize: 32,
       mainMemoryBlockSize: 2,
-      memoryCacheNumberLines: 6,
+      memoryCacheNumberLines: 8,
       memoryCacheN: 2,
       sequenceBlocks: '0 1 2 3 4 5 0 6',
     };
@@ -45,21 +45,29 @@
     };
 
     $scope.$watchGroup(['setup.memoryCacheNumberLines', 'setup.memoryCacheN'],function(newValues, oldValues){
+      _caculateMC();
+    });
+
+    var _caculateMC = function(){
       if($scope.setupForm.memoryCacheNumberLines.$valid && $scope.setupForm.memoryCacheN.$valid){
         $scope.lines = new Array($scope.setup.memoryCacheNumberLines); // linhas da MC
         $scope.groupLines = new Array(Math.ceil($scope.setup.memoryCacheNumberLines / $scope.setup.memoryCacheN));
         $scope.numberLinesEachGroup = new Array($scope.setup.memoryCacheN);
       }
-    });
+    };
 
     $scope.$watchGroup(['setup.mainMemorySize', 'setup.mainMemoryBlockSize'],function(newValues, oldValues){
+      _caculateMP();
+    });
+
+    var _caculateMP = function(){
       if($scope.setupForm.mainMemorySize.$valid && $scope.setupForm.mainMemoryBlockSize.$valid){
         var number_of_blocks = Math.ceil($scope.setup.mainMemorySize / $scope.setup.mainMemoryBlockSize);
         if(!$scope.blocks || $scope.blocks.length != number_of_blocks){
           $scope.blocks = new Array(number_of_blocks);
         }
       }
-    });
+    };
 
     $scope.canShowLineBlock = function(lineGroup, lineNumber){
       var line = $scope.lines[(lineGroup * $scope.numberLinesEachGroup.length) + lineNumber];
@@ -93,16 +101,21 @@
       }
     };
 
+    $scope.restart = function(){
+      $scope.configured = false;
+      $scope.sequence = [];
+      $scope.blocks = [];
+      $scope.lines = [];
+      $scope.logs = [];
+      _caculateMC();
+      _caculateMP();
+    };
+
     var _configure = function(){
       if(!$scope.configured){
         $scope.sequence = $scope.formatSequence();
         $scope.configured = true;
       }
-    };
-
-    var unconfigure = function(){
-      $scope.sequence = [];
-      $scope.configured = false;
     };
 
     $scope.formatSequence = function(){
@@ -134,6 +147,11 @@
     var _runWorkerStepByStep = function(){
       if($scope.finishJob){
         $scope.getFromMC($scope.sequence.shift());
+        if($scope.sequence.length == 0){
+          $scope.emptySequence = true;
+        }else{
+          $scope.emptySequence = false;
+        }
       }
     };
 
@@ -150,7 +168,7 @@
       for (var i = startPoint; i < endPoint; i++) {
         if($scope.lines[i]){
           if($scope.lines[i].block == blockNumber){
-            // vm.logs.push({block: block, group: toLineGroup, groupLine: (i - startPoint), line: i, type: 'exist'});
+            $scope.logs.push({block: blockNumber, group: toLineGroup, groupLine: (i - startPoint), line: i, type: 'exist'});
             _jobFinish(1000);
             return $scope.lines[i].usedAt = performance.now(); // encontrou uma linha com o bloco que está procurando
           }else if(leastRecentlyUsedAt > $scope.lines[i].usedAt){
@@ -188,5 +206,5 @@
     var _jobFinish = function(time){
       $timeout(function(){$scope.finishJob = true;}, time);
     };
-  });
+  }]);
 })();

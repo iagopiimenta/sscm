@@ -24,14 +24,14 @@
             <div class="row">
               <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('mainMemorySize')">
                 <label class="control-label" for="mainMemorySize">*Tam. da MP(bytes):</label>
-                <input autofocus class="form-control" name="mainMemorySize" ng-model="setup.mainMemorySize" min="1" type="number" required>
+                <input ng-disabled="configured" autofocus class="form-control" name="mainMemorySize" ng-model="setup.mainMemorySize" min="1" type="number" required>
                 <div ng-messages="setupForm.mainMemorySize.$error" ng-if="dirtyAndInvalidClass('mainMemorySize')">
                   <div ng-messages-include="error-messages"></div>
                 </div>
               </div>
               <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('mainMemoryBlockSize')">
                 <label class="control-label" for="mainMemoryBlockSize">Tam. do Bloco(bytes):</label>
-                <input class="form-control" name="mainMemoryBlockSize" ng-model="setup.mainMemoryBlockSize" min="1" type="number" required>
+                <input ng-disabled="configured" class="form-control" name="mainMemoryBlockSize" ng-model="setup.mainMemoryBlockSize" min="1" type="number" required>
                 <div ng-messages="setupForm.mainMemoryBlockSize.$error" ng-if="dirtyAndInvalidClass('mainMemoryBlockSize')">
                   <div ng-messages-include="error-messages"></div>
                 </div>
@@ -40,14 +40,14 @@
             <div class="row">
               <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('memoryCacheNumberLines')">
                 <label for="memoryCacheNumberLines">Qtde de linhas da MC:</label>
-                <input class="form-control" name="memoryCacheNumberLines" ng-model="setup.memoryCacheNumberLines" min="0" type="number" required>
+                <input ng-disabled="configured" class="form-control" name="memoryCacheNumberLines" ng-model="setup.memoryCacheNumberLines" min="0" type="number" required>
                 <div ng-messages="setupForm.memoryCacheNumberLines.$error" ng-if="dirtyAndInvalidClass('memoryCacheNumberLines')">
                   <div ng-messages-include="error-messages"></div>
                 </div>
               </div>
               <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('memoryCacheN')">
                 <label for="memoryCacheN">N:</label>
-                <input class="form-control" name="memoryCacheN" ng-model="setup.memoryCacheN" min="0" type="number" required>
+                <input ng-disabled="configured" class="form-control" name="memoryCacheN" ng-model="setup.memoryCacheN" min="0" type="number" required>
                 <div ng-messages="setupForm.memoryCacheN.$error" ng-if="dirtyAndInvalidClass('memoryCacheN')">
                   <div ng-messages-include="error-messages"></div>
                 </div>
@@ -56,7 +56,7 @@
             <div class="row">
               <div class="col-md-12 form-group" ng-class="dirtyAndInvalidClass('sequenceBlocks')">
                 <label for="numbersInput">Sequencia de acesso aos blocos da MP(separados por espaço):</label>
-                <input class="form-control" name="sequenceBlocks" ng-model="setup.sequenceBlocks" type="text" ng-pattern="/^\d+( \d+)*$/" required>
+                <input ng-disabled="configured" class="form-control" name="sequenceBlocks" ng-model="setup.sequenceBlocks" type="text" ng-pattern="/^\d+( \d+)*$/" required>
                 <div ng-messages="setupForm.sequenceBlocks.$error" ng-if="dirtyAndInvalidClass('sequenceBlocks')">
                   <div ng-messages-include="error-messages"></div>
                 </div>
@@ -66,13 +66,13 @@
               <div ng-init="setup.runOnceAllBlocks=true" class="col-md-12 form-group">
                 <div class="radio">
                   <label>
-                    <input type="radio" name="runOnceAllBlocks" ng-model="setup.runOnceAllBlocks" ng-value="true">
+                    <input ng-disabled="configured" type="radio" name="runOnceAllBlocks" ng-model="setup.runOnceAllBlocks" ng-value="true">
                     Executar blocos sequencialmente
                   </label>
                 </div>
                 <div class="radio">
                   <label>
-                    <input type="radio" name="runOnceAllBlocks" ng-model="setup.runOnceAllBlocks" ng-value="false">
+                    <input ng-disabled="configured" type="radio" name="runOnceAllBlocks" ng-model="setup.runOnceAllBlocks" ng-value="false">
                     Executar blocos passo a passo
                   </label>
                 </div>
@@ -80,11 +80,9 @@
             </div>
             <div class="row">
               <div class="col-md-12 form-group">
-                <button ng-show="setup.runOnceAllBlocks" ng-disabled="setupForm.$invalid" class="btn btn-primary" ng-click="runSequence(setup)" type="submit">Executar</button>
-                <button ng-hide="setup.runOnceAllBlocks" ng-disabled="setupForm.$invalid || !finishJob" class="btn btn-primary" ng-click="runSequence(setup)" type="submit">Próximo</button>
-              </div>
-              <div class="col-md-12 form-group">
-                <button ng-disabled="setupForm.$invalid || !finishJob" class="btn btn-danger" ng-click="restart(setup)" type="submit">Reiniciar</button>
+                <button ng-show="setup.runOnceAllBlocks" ng-disabled="setupForm.$invalid || configured" class="btn btn-primary" ng-click="runSequence(setup)" type="submit">Executar</button>
+                <button ng-hide="setup.runOnceAllBlocks" ng-disabled="setupForm.$invalid || !finishJob || emptySequence" class="btn btn-primary" ng-click="runSequence(setup)" type="submit">Próximo</button>
+                <button class="btn btn-danger" ng-click="restart(setup)" type="submit">Reiniciar</button>
               </div>
             </div>
           </form>
