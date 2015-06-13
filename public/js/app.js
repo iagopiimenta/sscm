@@ -26,8 +26,19 @@
     };
   }]);
 
+  angular.module('app').directive('scrollToBottom', ['$timeout', function($timeout) {
+    return function(scope, elem, attr) { // http://plnkr.co/edit/cWciPY4zJ8lSr31CECMS?p=preview
+      scope.$watchCollection(attr.scrollToBottom, function(){
+        $timeout(function() {
+          elem.animate({scrollTop: elem.offset().top}, "slow");
+        });
+      })
+    };
+  }]);
+
   angular.module('app').controller('MemoryController', ['$scope', '$timeout', function($scope, $timeout) {
     // $scope.cursor = {};
+    window.teste = $scope;
     $scope.finishJob = true;
     $scope.logs = [];
     $scope.setup = {
@@ -35,8 +46,10 @@
       mainMemoryBlockSize: 2,
       memoryCacheNumberLines: 8,
       memoryCacheN: 2,
-      sequenceBlocks: '0 1 2 3 4 5 0 6',
+      sequenceBlocks: '0 1 2 3 4 5 0 6 7 8',
     };
+
+    // TODO: validar sequencia com blocos que não existem na MP
 
     $scope.dirtyAndInvalidClass = function(field){
       if(($scope.setupForm[field].$dirty || $scope.setupForm[field].$touched) && $scope.setupForm[field].$invalid){
@@ -102,13 +115,16 @@
     };
 
     $scope.restart = function(){
+      $scope.setupForm.$setPristine();
+
+      $scope.setup = {runOnceAllBlocks: true};
       $scope.configured = false;
       $scope.sequence = [];
       $scope.blocks = [];
       $scope.lines = [];
+      $scope.groupLines = [];
+      $scope.numberLinesEachGroup = [];
       $scope.logs = [];
-      _caculateMC();
-      _caculateMP();
     };
 
     var _configure = function(){
