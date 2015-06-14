@@ -117,13 +117,16 @@
     $scope.restart = function(){
       $scope.setupForm.$setPristine();
 
-      $scope.setup = {runOnceAllBlocks: true};
+      // $scope.setup = {runOnceAllBlocks: true};
       $scope.configured = false;
       $scope.sequence = [];
       $scope.blocks = [];
       $scope.lines = [];
-      $scope.groupLines = [];
-      $scope.numberLinesEachGroup = [];
+      //$scope.groupLines = [];
+      //$scope.numberLinesEachGroup = [];
+      _caculateMC();
+      _caculateMP();
+
       $scope.logs = [];
     };
 
