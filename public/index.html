@@ -14,7 +14,7 @@
         <div class="navbar-header">
           <a class="navbar-brand" href="#">Trabalho de AOC/AED</a>
         </div>
-        <p class="navbar-text navbar-right">Iago</p>
+        <p class="navbar-text navbar-right">Iago/Artur</p>
       </div>
     </nav>
     <div class="container" ng-controller="MemoryController">
@@ -79,7 +79,7 @@
           <div class="row">
             <div class="row">
               <div class="col-md-12">
-                <form novalidate name="setupForm"><!-- http://www.ng-newsletter.com/posts/validations.html -->
+                <form novalidate name="setupForm">
                   <div class="row">
                     <div class="col-md-6 form-group" ng-class="dirtyAndInvalidClass('mainMemorySize')">
                       <label class="control-label" for="mainMemorySize">*Tam. da MP(bytes):</label>
@@ -115,7 +115,7 @@
                   <div class="row">
                     <div class="col-md-12 form-group" ng-class="dirtyAndInvalidClass('sequenceBlocks')">
                       <label for="numbersInput">Sequencia de acesso aos blocos da MP(separados por espaço):</label>
-                      <input ng-disabled="configured" class="form-control" name="sequenceBlocks" ng-model="setup.sequenceBlocks" type="text" ng-pattern="/^\d+( \d+)*$/" required>
+                      <input available-in-array="blocks" ng-disabled="configured" class="form-control" name="sequenceBlocks" ng-model="setup.sequenceBlocks" type="text" ng-pattern="/^\d+( \d+)*$/" required>
                       <div ng-messages="setupForm.sequenceBlocks.$error" ng-if="dirtyAndInvalidClass('sequenceBlocks')">
                         <div ng-messages-include="error-messages"></div>
                       </div>
@@ -173,6 +173,7 @@
       <small ng-message="number" class="help-block">Digite apenas números</small>
       <small ng-message="min" class="help-block">Valor muito baixo</small>
       <small ng-message="pattern" class="help-block">Sequência inválida</small>
+      <small ng-message="availableInArray" class="help-block">Todos os blocos da sequência devem existir na MP</small>
     </script>
     <script src="bower_components/jquery/dist/jquery.min.js"></script>
     <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>

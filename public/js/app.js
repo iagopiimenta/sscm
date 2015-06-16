@@ -7,7 +7,7 @@
   angular.module('app', ['ngMessages']);
 
   angular.module('app').directive('animateOnChange', ['$animate', '$timeout', function($animate, $timeout) {
-    return function(scope, elem, attr) { // http://plnkr.co/edit/cWciPY4zJ8lSr31CECMS?p=preview
+    return function(scope, elem, attr) {
       scope.$watchCollection(attr.animateOnChange, function(newValues, oldValues) {
         if(!newValues){
           $animate.removeClass(elem, 'info');
@@ -27,7 +27,7 @@
   }]);
 
   angular.module('app').directive('scrollToBottom', ['$timeout', function($timeout) {
-    return function(scope, elem, attr) { // http://plnkr.co/edit/cWciPY4zJ8lSr31CECMS?p=preview
+    return function(scope, elem, attr) {
       scope.$watchCollection(attr.scrollToBottom, function(){
         $timeout(function() {
           elem.animate({scrollTop: elem.offset().top}, "slow");
@@ -36,9 +36,38 @@
     };
   }]);
 
+  angular.module('app').directive('availableInArray', function($q) {
+    return {
+      require: 'ngModel',
+      scope: {
+        availableInArray: '=',
+        ngModel: '='
+      },
+      link: function(scope, elm, attrs, ctrl) {
+        ctrl.$asyncValidators.availableInArray = function(modelValue, viewValue) {
+          if(!scope.availableInArray || !modelValue){
+            return $q.when();
+          }
+          var numbers = modelValue.split(" ");
+          for(var i in numbers){
+            if(parseInt(numbers[i]) >= scope.availableInArray.length){
+              return $q.reject();
+            }
+          }
+
+          return $q.when();
+        };
+
+        scope.$watch("availableInArray", function() {
+          ctrl.$validate();
+        });
+      }
+    };
+  });
+
   angular.module('app').controller('MemoryController', ['$scope', '$timeout', function($scope, $timeout) {
     // $scope.cursor = {};
-    window.teste = $scope;
+    window.teste = $scope; // to test the browser
     $scope.finishJob = true;
     $scope.logs = [];
     $scope.setup = {
@@ -48,8 +77,6 @@
       memoryCacheN: 2,
       sequenceBlocks: '0 1 2 3 4 5 0 6 7 8',
     };
-
-    // TODO: validar sequencia com blocos que não existem na MP
 
     $scope.dirtyAndInvalidClass = function(field){
       if(($scope.setupForm[field].$dirty || $scope.setupForm[field].$touched) && $scope.setupForm[field].$invalid){
@@ -159,7 +186,7 @@
         $scope.getFromMC($scope.sequence.shift());
       }
       if($scope.sequence.length > 0){
-        $timeout(_runWorkerOnce, 200);
+        $timeout(_runWorkerOnce, 0);
       }
     };
 
