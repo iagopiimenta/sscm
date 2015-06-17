@@ -70,13 +70,13 @@
     window.teste = $scope; // to test the browser
     $scope.finishJob = true;
     $scope.logs = [];
-    $scope.setup = {
-      mainMemorySize: 32,
-      mainMemoryBlockSize: 2,
-      memoryCacheNumberLines: 8,
-      memoryCacheN: 2,
-      sequenceBlocks: '0 1 2 3 4 5 0 6 7 8',
-    };
+    // $scope.setup = {
+    //   mainMemorySize: 32,
+    //   mainMemoryBlockSize: 2,
+    //   memoryCacheNumberLines: 8,
+    //   memoryCacheN: 2,
+    //   sequenceBlocks: '0 1 2 3 4 5 0 6 7 8',
+    // };
 
     $scope.dirtyAndInvalidClass = function(field){
       if(($scope.setupForm[field].$dirty || $scope.setupForm[field].$touched) && $scope.setupForm[field].$invalid){
