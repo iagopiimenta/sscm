@@ -149,6 +149,8 @@
       $scope.sequence = [];
       $scope.blocks = [];
       $scope.lines = [];
+      $scope.finishJob = true;
+      $scope.emptySequence = false;
       //$scope.groupLines = [];
       //$scope.numberLinesEachGroup = [];
       _caculateMC();
