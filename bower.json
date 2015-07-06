@@ -1,0 +1,22 @@
+{
+  "name": "sscm",
+  "version": "1.0.0",
+  "description": "This app uses an algorithm based on LRU (Least Recently Used) to load blocks from the main memory in cache memory",
+  "authors": [
+    "Iago Pimenta <iagopimenta.s@gmail.com>"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": "~1.4.0",
+    "bootstrap": "~3.3.4",
+    "jquery": "~2.1.4",
+    "angular-strap": "~2.2.4"
+  }
+}
